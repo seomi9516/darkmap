@@ -22,6 +22,13 @@
   z-index: 2;
 }
 
+.head_logo {
+  display: flex;
+  &:hover {
+    cursor: pointer;
+  }
+}
+
 .crime_logo {
   position: relative;
   display: flex;

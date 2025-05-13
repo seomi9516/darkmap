@@ -3,25 +3,25 @@
     <img width="198px" height="198px" src="../assets/logo.svg" />
   </div>
   <div class="head_panel">
-    <div style="display: flex">
+    <div class="head_logo" @click="clickCrimeLogo(0)">
       <div class="crime_logo" style="background: #ffa8a8">
         <img src="../assets/flasherLogo.svg" />
       </div>
       <div class="header_text">바바리맨</div>
     </div>
-    <div style="display: flex">
+    <div class="head_logo" @click="clickCrimeLogo(1)">
       <div class="crime_logo" style="background: #1cd6ff">
         <img src="../assets/huntingLogo2.svg" />
       </div>
       <div class="header_text">헌팅</div>
     </div>
-    <div style="display: flex">
+    <div class="head_logo" @click="clickCrimeLogo(2)">
       <div class="crime_logo" style="background: #b56bff">
         <img src="../assets/chasingLogo2.svg" />
       </div>
       <div class="header_text">미행</div>
     </div>
-    <div style="display: flex">
+    <div class="head_logo" @click="clickCrimeLogo(3)">
       <div class="crime_logo" style="background: #ffed89">
         <img src="../assets/assaultLogo.svg" />
       </div>
@@ -215,6 +215,13 @@ const clickAllCrime = () => {
     })
   }
   // 필터링 로직 넣기
+  emits('changeFilter', crimeTypes.value, selectGu.value, dongList.value)
+}
+
+const clickCrimeLogo = (idx) => {
+  for (let i = 0; i < crimeTypes.value.length; i++) {
+    crimeTypes.value[i].checked = (idx === i)
+  }
   emits('changeFilter', crimeTypes.value, selectGu.value, dongList.value)
 }
 

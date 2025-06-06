@@ -133,6 +133,7 @@
           <img style="width: 4px" src="../assets/rightArrow.svg" />
         </div>
       </div>
+      <BaseFooter />
     </div>
   </div>
 </template>
@@ -140,7 +141,8 @@
 <script setup>
 import { useNewsListStore } from '@/store/newsListStore';
 import { storeToRefs } from 'pinia';
-import AddressFilter from './AddressFilter.vue';
+import AddressFilter from '@/components//AddressFilter.vue';
+import BaseFooter from '@/components/BaseFooter.vue';
 import addressData from '@/constant/addresses.json';
 import { ref, computed, defineEmits, watch, onMounted } from 'vue';
 
@@ -369,7 +371,7 @@ const clickDong = (idx) => {
   }
 
   &__body {
-    padding: 0 20px;
+    padding: 0 20px 55px 20px;
   }
 
   &__body-title {
@@ -463,7 +465,7 @@ const clickDong = (idx) => {
   }
 
   &__paging {
-    padding: 26px 55px;
+    padding: 20px 0 55px;
     display: flex;
     justify-content: center;
     align-items: center;

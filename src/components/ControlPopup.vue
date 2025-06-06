@@ -110,6 +110,9 @@
         <img style="width: 4px" src="../assets/rightArrow.svg" />
       </div>
     </div>
+    <div class="footer">
+      <BaseFooter />
+    </div>
   </div>
 </template>
 
@@ -120,6 +123,7 @@ import AddressFilter from './AddressFilter.vue';
 import addressData from '@/constant/addresses.json';
 import '@/styles/ControlPopup.scss';
 import { ref, computed, defineEmits, watch } from 'vue';
+import BaseFooter from '@/components/BaseFooter.vue';
 
 const emits = defineEmits(['changeFilter']);
 

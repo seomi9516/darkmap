@@ -157,8 +157,6 @@ const paginatedArticles = computed(() => {
   return articleList.value.slice(start, start + pageSize);
 });
 
-console.log(paginatedArticles);
-
 const getCategoryText = computed(() => {
   if (isCluster.value) {
     const categories = props.article

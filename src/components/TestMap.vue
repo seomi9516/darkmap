@@ -6,11 +6,13 @@ import { storeToRefs } from 'pinia';
 import { useNewsListStore } from '@/store/newsListStore';
 import MarkerPopup from './MarkerPopup.vue';
 import ControlPopup from './ControlPopup.vue';
+import BaseLoader from './BaseLoader.vue';
 
 const { loadArticles } = useNewsListStore();
 const { articles, filteredArticles } = storeToRefs(useNewsListStore());
 
 const mapDiv = ref(null);
+const isLoading = ref(false);
 
 const loader = new Loader({
   apiKey: process.env.VUE_APP_API_KEY,
@@ -190,57 +192,63 @@ onMounted(async () => {
     overlay = new CustomOverlay(clusterPosition, container, map, cluster.count);
   };
 
-  clusters.바바리맨 = new MarkerClusterer({
-    map,
-    markers: articles.value
-      .filter(({ category }) => {
-        return category === '바바리맨';
-      })
-      .map(({ marker }) => marker),
-    renderer,
-    onClusterClick: onClickCluster,
-  });
-  clusters.미행 = new MarkerClusterer({
-    map,
-    markers: articles.value
-      .filter(({ category }) => {
-        return category === '미행';
-      })
-      .map(({ marker }) => marker),
-    renderer,
-    onClusterClick: onClickCluster,
-  });
-  clusters.헌팅 = new MarkerClusterer({
-    map,
-    markers: articles.value
-      .filter(({ category }) => {
-        return category === '헌팅';
-      })
-      .map(({ marker }) => marker),
-    renderer,
-    onClusterClick: onClickCluster,
-  });
-  clusters.폭행 = new MarkerClusterer({
-    map,
-    markers: articles.value
-      .filter(({ category }) => {
-        return category === '폭행';
-      })
-      .map(({ marker }) => marker),
-    renderer,
-    onClusterClick: onClickCluster,
-  });
-  clusters.기타 = new MarkerClusterer({
-    map,
-    markers: articles.value
-      .filter(({ category }) => {
-        return category === '기타';
-      })
-      .map(({ marker }) => marker),
-    renderer,
-    onClusterClick: onClickCluster,
-  });
-  filteredArticles.value = [...articles.value];
+  isLoading.value = true;
+
+  try {
+    clusters.바바리맨 = new MarkerClusterer({
+      map,
+      markers: articles.value
+        .filter(({ category }) => {
+          return category === '바바리맨';
+        })
+        .map(({ marker }) => marker),
+      renderer,
+      onClusterClick: onClickCluster,
+    });
+    clusters.미행 = new MarkerClusterer({
+      map,
+      markers: articles.value
+        .filter(({ category }) => {
+          return category === '미행';
+        })
+        .map(({ marker }) => marker),
+      renderer,
+      onClusterClick: onClickCluster,
+    });
+    clusters.헌팅 = new MarkerClusterer({
+      map,
+      markers: articles.value
+        .filter(({ category }) => {
+          return category === '헌팅';
+        })
+        .map(({ marker }) => marker),
+      renderer,
+      onClusterClick: onClickCluster,
+    });
+    clusters.폭행 = new MarkerClusterer({
+      map,
+      markers: articles.value
+        .filter(({ category }) => {
+          return category === '폭행';
+        })
+        .map(({ marker }) => marker),
+      renderer,
+      onClusterClick: onClickCluster,
+    });
+    clusters.기타 = new MarkerClusterer({
+      map,
+      markers: articles.value
+        .filter(({ category }) => {
+          return category === '기타';
+        })
+        .map(({ marker }) => marker),
+      renderer,
+      onClusterClick: onClickCluster,
+    });
+    filteredArticles.value = [...articles.value];
+  } finally {
+    // isLoading.value = false;
+  }
 });
 
 const changeFilter = (crimeTypes, selectedSido, dongList) => {
@@ -282,11 +290,34 @@ const changeFilter = (crimeTypes, selectedSido, dongList) => {
 </script>
 
 <template>
-  <div class="map" ref="mapDiv"></div>
-  <ControlPopup @change-filter="changeFilter" />
+  <div class="map-container">
+    <div v-if="isLoading" class="loader-container">
+      <BaseLoader />
+    </div>
+    <div class="map" ref="mapDiv"></div>
+    <ControlPopup @change-filter="changeFilter" />
+  </div>
 </template>
 
 <style lang="scss" scoped>
+.map-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+.loader-container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 20px;
+  border-radius: 8px;
+}
+
 div:deep(.marker) {
   position: relative;
   width: 16px;

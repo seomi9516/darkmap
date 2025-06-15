@@ -49,152 +49,158 @@ const closeOverlay = () => {
 };
 
 onMounted(async () => {
-  await loadArticles();
-  const { Map, OverlayView } = await loader.importLibrary('maps');
-  const { AdvancedMarkerElement } = await loader.importLibrary('marker');
+  try {
+    isLoading.value = true;
+    await loadArticles();
+    const { Map, OverlayView } = await loader.importLibrary('maps');
+    const { AdvancedMarkerElement } = await loader.importLibrary('marker');
 
-  class CustomOverlay extends OverlayView {
-    position;
-    div;
-    constructor(position, content, map, num) {
-      super();
-      this.position = position;
-      this.content = content;
-      this.map = map;
-      this.div = null;
-      this.num = num;
-      this.setMap(map);
-    }
-
-    onAdd() {
-      this.div = document.createElement('div');
-      this.div.style.position = 'absolute';
-      this.div.style.pointerEvents = 'auto'; // 클릭 이벤트 허용
-      this.div.appendChild(this.content);
-      CustomOverlay.preventMapHitsAndGesturesFrom(this.div);
-      const panes = this.getPanes();
-      panes.floatPane.appendChild(this.div);
-    }
-
-    draw() {
-      if (this.div) {
-        const overlayProjection = this.getProjection();
-        const position = overlayProjection.fromLatLngToDivPixel(this.position);
-
-        const popupHeight = this.div.offsetHeight;
-
-        const offsetX = 16;
-        const offsetY = popupHeight / 2;
-
-        const gap = 20;
-        this.div.style.left = `${position.x + offsetX + gap}px`;
-        this.div.style.top = `${position.y - offsetY}px`;
-        this.div.style.zIndex = '1000';
-      }
-    }
-
-    onRemove() {
-      if (this.div) {
-        this.div.parentNode.removeChild(this.div);
+    class CustomOverlay extends OverlayView {
+      position;
+      div;
+      constructor(position, content, map, num) {
+        super();
+        this.position = position;
+        this.content = content;
+        this.map = map;
         this.div = null;
+        this.num = num;
+        this.setMap(map);
+      }
+
+      onAdd() {
+        this.div = document.createElement('div');
+        this.div.style.position = 'absolute';
+        this.div.style.pointerEvents = 'auto'; // 클릭 이벤트 허용
+        this.div.appendChild(this.content);
+        CustomOverlay.preventMapHitsAndGesturesFrom(this.div);
+        const panes = this.getPanes();
+        panes.floatPane.appendChild(this.div);
+      }
+
+      draw() {
+        if (this.div) {
+          const overlayProjection = this.getProjection();
+          const position = overlayProjection.fromLatLngToDivPixel(
+            this.position,
+          );
+
+          const popupHeight = this.div.offsetHeight;
+
+          const offsetX = 16;
+          const offsetY = popupHeight / 2;
+
+          const gap = 20;
+          this.div.style.left = `${position.x + offsetX + gap}px`;
+          this.div.style.top = `${position.y - offsetY}px`;
+          this.div.style.zIndex = '1000';
+        }
+      }
+
+      onRemove() {
+        if (this.div) {
+          this.div.parentNode.removeChild(this.div);
+          this.div = null;
+        }
+      }
+
+      close() {
+        this.setMap(null);
       }
     }
 
-    close() {
-      this.setMap(null);
-    }
-  }
-
-  library.Map = Map;
-  library.AdvancedMarkerElement = AdvancedMarkerElement;
-  map = new library.Map(mapDiv.value, {
-    center: { lat: 36.36727, lng: 127.07242 },
-    zoom: 7.5,
-    mapId: '503c7df556477029',
-    fullscreenControl: false,
-    mapTypeControl: false,
-    streetViewControl: false,
-  });
-
-  for (const article of articles.value) {
-    const markerTag = document.createElement('div');
-    markerTag.classList.add('marker');
-    if (Object.keys(markerColor).includes(article.category)) {
-      markerTag.style.backgroundColor = markerColor[article.category];
-    }
-    markerTag.setAttribute('article_title', article.title);
-    markerTag.setAttribute('article_url', article.url);
-    markerTag.setAttribute('article_data', article.date);
-    article.marker = new library.AdvancedMarkerElement({
-      map,
-      position: article.position,
-      content: markerTag,
+    library.Map = Map;
+    library.AdvancedMarkerElement = AdvancedMarkerElement;
+    map = new library.Map(mapDiv.value, {
+      center: { lat: 36.36727, lng: 127.07242 },
+      zoom: 7.5,
+      mapId: '503c7df556477029',
+      fullscreenControl: false,
+      mapTypeControl: false,
+      streetViewControl: false,
     });
-    article.marker.addListener('click', () => {
+
+    for (const article of articles.value) {
+      const markerTag = document.createElement('div');
+      markerTag.classList.add('marker');
+      if (Object.keys(markerColor).includes(article.category)) {
+        markerTag.style.backgroundColor = markerColor[article.category];
+      }
+      markerTag.setAttribute('article_title', article.title);
+      markerTag.setAttribute('article_url', article.url);
+      markerTag.setAttribute('article_data', article.date);
+      article.marker = new library.AdvancedMarkerElement({
+        map,
+        position: article.position,
+        content: markerTag,
+      });
+      article.marker.addListener('click', () => {
+        closeOverlay();
+
+        const container = document.createElement('div');
+        const app = createApp(MarkerPopup, {
+          closeWindow: closeOverlay,
+          article: article,
+        });
+        app.mount(container);
+
+        overlay = new CustomOverlay(article.position, container, map, 1);
+      });
+    }
+
+    const renderer = {
+      render: ({ count, position, markers }) => {
+        const clusterTag = document.createElement('div');
+        clusterTag.classList.add('cluster');
+        const size = Math.min(16 + count, 200);
+        clusterTag.innerHTML = `
+    <div style="line-height: ${size}px">${String(count)}<div>
+  `;
+        clusterTag.style.backgroundColor =
+          markers[0].content.style.backgroundColor;
+        clusterTag.style.width = size + 'px';
+        clusterTag.style.height = size + 'px';
+        const mark = new library.AdvancedMarkerElement({
+          map,
+          content: clusterTag,
+          position,
+          zIndex: 1000 + count,
+        });
+
+        return mark;
+      },
+    };
+
+    const onClickCluster = (e, cluster) => {
       closeOverlay();
+
+      const clusterPosition = {
+        lat: cluster.position.lat(),
+        lng: cluster.position.lng(),
+      };
+
+      // 클러스터 내 마커들의 원본 기사 데이터를 찾아서 전달
+      const clusterArticles = cluster.markers.map((marker) => {
+        // marker의 content에서 title을 가져와서 원본 데이터 찾기
+        const title = marker.content.getAttribute('article_title');
+        return articles.value.find((article) => article.title === title);
+      });
 
       const container = document.createElement('div');
       const app = createApp(MarkerPopup, {
         closeWindow: closeOverlay,
-        article: article,
+        article: clusterArticles, // 완전한 기사 객체 배열 전달
       });
       app.mount(container);
 
-      overlay = new CustomOverlay(article.position, container, map, 1);
-    });
-  }
-
-  const renderer = {
-    render: ({ count, position, markers }) => {
-      const clusterTag = document.createElement('div');
-      clusterTag.classList.add('cluster');
-      const size = Math.min(16 + count, 200);
-      clusterTag.innerHTML = `
-      <div style="line-height: ${size}px">${String(count)}<div>
-    `;
-      clusterTag.style.backgroundColor =
-        markers[0].content.style.backgroundColor;
-      clusterTag.style.width = size + 'px';
-      clusterTag.style.height = size + 'px';
-      const mark = new library.AdvancedMarkerElement({
+      overlay = new CustomOverlay(
+        clusterPosition,
+        container,
         map,
-        content: clusterTag,
-        position,
-        zIndex: 1000 + count,
-      });
-
-      return mark;
-    },
-  };
-
-  const onClickCluster = (e, cluster) => {
-    closeOverlay();
-
-    const clusterPosition = {
-      lat: cluster.position.lat(),
-      lng: cluster.position.lng(),
+        cluster.count,
+      );
     };
 
-    // 클러스터 내 마커들의 원본 기사 데이터를 찾아서 전달
-    const clusterArticles = cluster.markers.map((marker) => {
-      // marker의 content에서 title을 가져와서 원본 데이터 찾기
-      const title = marker.content.getAttribute('article_title');
-      return articles.value.find((article) => article.title === title);
-    });
-
-    const container = document.createElement('div');
-    const app = createApp(MarkerPopup, {
-      closeWindow: closeOverlay,
-      article: clusterArticles, // 완전한 기사 객체 배열 전달
-    });
-    app.mount(container);
-
-    overlay = new CustomOverlay(clusterPosition, container, map, cluster.count);
-  };
-
-  isLoading.value = true;
-
-  try {
     clusters.바바리맨 = new MarkerClusterer({
       map,
       markers: articles.value
@@ -247,7 +253,7 @@ onMounted(async () => {
     });
     filteredArticles.value = [...articles.value];
   } finally {
-    // isLoading.value = false;
+    isLoading.value = false;
   }
 });
 

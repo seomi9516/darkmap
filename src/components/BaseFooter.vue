@@ -1,20 +1,25 @@
 <template>
   <footer class="BaseFooter">
-    <div class="BaseFooter__intro">
-      <a :href="LINK_LIST.intro" target="_blank" class="BaseFooter__link">
+    <div class="BaseFooterintro">
+      <a :href="LINK_LIST.intro" target="_blank" class="BaseFooterlink">
         셰도우 핀즈 </a
       >의 K-다크맵 투어 Ver.1.0
     </div>
-    <div class="BaseFooter__container">
-      <a
-        :href="LINK_LIST.privacyPolicy"
-        target="_blank"
-        class="BaseFooter__link"
-      >
+    <div class="BaseFootercontainer">
+      <a :href="LINK_LIST.privacyPolicy" target="_blank" class="BaseFooterlink">
         개인정보처리방침
       </a>
-      <a :href="LINK_LIST.contact" target="_blank" class="BaseFooter__link"
+      <a
+        :href="'https://forms.gle/Kr93YqK5ZjsiqvpF6'"
+        target="_blank"
+        class="BaseFooterlink"
         >문의</a
+      >
+      <a
+        :href="'https://dune-purple-f80.notion.site/21325ce1e4e9803393abfe29d60323b4'"
+        target="_blank"
+        class="BaseFooterlink"
+        >서비스 소개</a
       >
     </div>
   </footer>
@@ -35,12 +40,12 @@ const LINK_LIST = {
   font-weight: 500;
   color: #fff;
 
-  &__intro {
+  &intro {
     display: flex;
     align-items: center;
   }
 
-  &__container {
+  &container {
     display: flex;
     align-items: center;
     margin-top: 10px;

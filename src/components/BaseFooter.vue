@@ -57,5 +57,10 @@ const LINK_LIST = {
     text-decoration: underline;
     color: #fff;
   }
+  .BaseFooterlink {
+    display: block;
+    text-decoration: underline;
+    color: #fff;
+  }
 }
 </style>
